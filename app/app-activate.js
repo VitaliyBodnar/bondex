@@ -19,7 +19,6 @@ async function mailjsLogin({ username, password }) {
       try {
         await signIn(username, mailConfirmationCode);
         await boost();
-        console.log("User activated:", { username, userIndex });
         userIndex++;
         await validateUser();
       } catch (error) {
@@ -69,10 +68,10 @@ async function activateNextUser() {
   await validateUser();
 }
 
-// try {
-//   activateUsers();
-// } catch (error) {
-//   console.error({ activateUsersError: error });
-// }
+try {
+  activateUsers();
+} catch (error) {
+  console.error({ activateUsersError: error });
+}
 
 exports.activateUsers = activateUsers;
