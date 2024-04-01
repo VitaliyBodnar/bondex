@@ -57,7 +57,7 @@ function signInProcess(user, mailConfirmationCode) {
     )
     .then(() =>
       accountOnboard({
-        firstName: generateRandomUsername() + " MA",
+        firstName: generateRandomUsername() + " H",
         lastName: generateRandomSurname(),
         headline: generateRandomJob(),
         step: 1,
