@@ -10,31 +10,35 @@ let users = [];
 const mailjs = new Mailjs();
 
 async function mailjsLogin({ username, password }) {
-  try {
-    await mailjs.login(username, password);
+  const user =  await mailjs.login(username, password);
 
     mailjs.on("arrive", async (msg) => {
       mailConfirmationCode = getMailCode(msg);
 
       try {
-        await signIn(username, mailConfirmationCode);
-        await boost();
-        userIndex++;
-        await validateUser();
+        await boost('activate');
+
+        activateNextUser();
       } catch (error) {
         console.error({ signInError: error });
       }
 
       mailjs.off();
     });
-  } catch (error) {
-    console.error({ mailjsLoginError: error });
-  }
+
+    setTimeout(() => {
+      if (!mailConfirmationCode) {
+        mailjs.off();
+        activateUsers();
+      }
+    }, 60000);
+
+    return user;
 }
 
 async function activateUsers() {
   try {
-    users = (await getUsers()).filter(Boolean);
+    users = (await getUsers()).slice(200).filter(Boolean);
     userIndex = 0;
     await validateUser();
   } catch (error) {
@@ -45,13 +49,11 @@ async function activateUsers() {
 async function validateUser() {
   mailConfirmationCode = null;
 
-  if (userIndex >= users.length) return;
+  if (userIndex >= users.length) {
+    userIndex = 0;
+  }
 
   const user = users[userIndex];
-  if (!user) {
-    await activateNextUser();
-    return;
-  }
 
   try {
     await mailjsLogin(user);
@@ -59,8 +61,6 @@ async function validateUser() {
   } catch (error) {
     console.error({ validateUserError: error });
   }
-
-  await activateNextUser();
 }
 
 async function activateNextUser() {

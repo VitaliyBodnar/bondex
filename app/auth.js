@@ -36,10 +36,10 @@ function accountOnboard(data) {
     });
 }
 
-function boost() {
+function boost(moduleName) {
   return axios
     .post(`${baseUrl}/dashboard/boost`, {}, getHeaders(signInToken))
-    .then(() => console.log("Boosted successfully", `${new Date().getHours()}:${new Date().getMinutes()}`))
+    .then(() => console.log("Boosted successfully " + moduleName, `${new Date().getHours()}:${new Date().getMinutes()}`))
     .catch((err) => {
       console.error({ boostErr: err });
     });

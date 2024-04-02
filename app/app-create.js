@@ -92,7 +92,7 @@ function signInProcess(user, mailConfirmationCode) {
         skip: true,
       })
     )
-    .then(() => boost())
+    .then(() => boost('create'))
     .catch((err) => {
       console.error({ signInProcessErr: err });
     });
