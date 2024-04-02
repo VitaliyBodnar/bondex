@@ -20,7 +20,7 @@ function signIn(username, mailConfirmationCode) {
       signInToken = res.data.data;
     })
     .catch((err) => {
-      console.error({ errSignIn: err });
+      console.error({ errSignIn: err?.response?.status });
     });
 }
 
@@ -32,16 +32,16 @@ function accountOnboard(data) {
     .post(`${baseUrl}/Account/onboard`, payload, headers)
     .then()
     .catch((err) => {
-      console.error({ accountOnboardErr: err.response, data });
+      console.error({ accountOnboardErr: err?.response?.status });
     });
 }
 
-function boost(moduleName) {
+function boost(module) {
   return axios
     .post(`${baseUrl}/dashboard/boost`, {}, getHeaders(signInToken))
-    .then(() => console.log("Boosted successfully " + moduleName, `${new Date().getHours()}:${new Date().getMinutes()}`))
+    .then(() => console.log("Boosted successfully:" + module))
     .catch((err) => {
-      console.error({ boostErr: err });
+      console.error({ boostErr: err?.response?.status });
     });
 }
 
@@ -51,9 +51,9 @@ function webAuthValidate(data) {
   return axios
     .post(`${baseUrl}/web/auth/validate`, payload)
     .then()
-    // .catch((err) => {
-    //   console.error({ webAuthValidateErr: err });
-    // });
+    .catch((err) => {
+      console.error({ webAuthValidateErr: err?.response?.status });
+    });
 }
 
 function authenticationValidate(username) {
@@ -62,10 +62,7 @@ function authenticationValidate(username) {
     token: authenticationValidateToken,
   });
 
-  return axios.post(`${baseUrl}/Authentication/validate`, payload)
-  .catch((err) => {
-    console.error({ authenticationValidateErr: err });
-  });
+  return axios.post(`${baseUrl}/Authentication/validate`, payload);
 }
 
 exports.signIn = signIn;

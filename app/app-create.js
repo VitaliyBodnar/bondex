@@ -18,32 +18,31 @@ const {
 const { setUser } = require("./firebase");
 
 const inviteCode = "DLJSW";
-let mailConfirmationCode = null;
+let mailConfirmationCode = "";
 
 async function mailjsCreateAccount() {
   const acc = await mailjs.createOneAccount();
+  if (!acc) {
+    create();
+  }
   const user = acc.data;
 
-  try {
-    mailjs.on("arrive", (msg) => {
-      mailConfirmationCode = getMailCode(msg);
+  mailjs.on("arrive", (msg) => {
+    mailConfirmationCode = getMailCode(msg);
+    mailjs.off();
+
+    signInProcess(user, mailConfirmationCode)
+      .then(() => setUser(user))
+      .then(() => create())
+  });
+
+  setTimeout(() => {
+    if (!mailConfirmationCode) {
       mailjs.off();
+      create();
+    }
+  }, 60000);
 
-      signInProcess(user, mailConfirmationCode)
-        .then(() => setUser(user))
-        .then(() => create())
-    });
-
-    setTimeout(() => {
-      if (!mailConfirmationCode) {
-        mailjs.off();
-        create();
-      }
-    }, 60000);
-
-  } catch (error) {
-    console.error({ mailjsCreateAccountError: error });
-  }
   return user;
 }
 
@@ -57,7 +56,7 @@ function signInProcess(user, mailConfirmationCode) {
     )
     .then(() =>
       accountOnboard({
-        firstName: generateRandomUsername() + " H",
+        firstName: generateRandomUsername(),
         lastName: generateRandomSurname(),
         headline: generateRandomJob(),
         step: 1,
@@ -94,18 +93,25 @@ function signInProcess(user, mailConfirmationCode) {
     )
     .then(() => boost('create'))
     .catch((err) => {
-      console.error({ signInProcessErr: err });
+      console.error({ signInProcessErr: err?.response?.status });
     });
 }
 
 function create() {
-  mailConfirmationCode = null;
+  mailjsCreateAccount()
+    .then((user) => authenticationValidate(user.username).catch((err) => {
+      console.log({ createErr: err?.response?.status || err });
 
-  try {
-    mailjsCreateAccount().then((user) => authenticationValidate(user.username));
-  } catch (catchErr) {
-    console.error({ catchErr });
-  }
+      if (err?.response?.status === 429) {
+        setTimeout(() => {
+          create();
+        }, 40000);
+
+      } else {
+        create();
+      }
+    
+  }));
 }
 
-exports.create = create;
+create();

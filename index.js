@@ -1,13 +1,11 @@
 const express = require('express')
 const path = require('path')
 
-const { create } = require('./app/app-create');
-const { activateUsers } = require('./app/app-activate');
+const { runProcesses } = require('./app/app-full.js')
 
 const PORT = process.env.PORT || 5001;
 
-create();
-activateUsers();
+runProcesses();
 
 express()
   .use(express.static(path.join(__dirname, 'public')))

@@ -1,77 +1,72 @@
 const Mailjs = require("@cemalgnlts/mailjs");
+const mailjs = new Mailjs();
+
 const { getMailCode } = require("./helpers");
 const { getUsers } = require("./firebase");
 const { signIn, boost, webAuthValidate } = require("./auth");
 
 let mailConfirmationCode = "";
 let userIndex = 0;
+let endIndex = 0;
 let users = [];
 
-const mailjs = new Mailjs();
-
 async function mailjsLogin({ username, password }) {
-  const user =  await mailjs.login(username, password);
+  const loginUser = await mailjs.login(username, password);
 
-    mailjs.on("arrive", async (msg) => {
-      mailConfirmationCode = getMailCode(msg);
+  if (!loginUser) {
+    validateUser(users[userIndex]);
+  }
 
-      try {
-        await boost('activate');
+  mailjs.on("arrive", (msg) => {
+    mailConfirmationCode = getMailCode(msg);
 
-        activateNextUser();
-      } catch (error) {
-        console.error({ signInError: error });
+    signIn(username, mailConfirmationCode)
+    .then(() => boost('activate'))
+    .then(() => {
+      userIndex++;
+
+      if (!users[userIndex] || userIndex === endIndex) {
+        return;
       }
-
-      mailjs.off();
-    });
+      return validateUser(users[userIndex]);
+    })
+    .catch(() => validateUser(users[userIndex]));
 
     setTimeout(() => {
       if (!mailConfirmationCode) {
-        mailjs.off();
-        activateUsers();
+        userIndex++;
+        return validateUser(users[userIndex]);
       }
     }, 60000);
 
-    return user;
+    mailjs.off();
+  });
 }
 
-async function activateUsers() {
-  try {
-    users = (await getUsers()).slice(200).filter(Boolean);
-    userIndex = 0;
-    await validateUser();
-  } catch (error) {
-    console.error({ getUsersError: error });
-  }
+async function validateUsers(startIndex) {
+  users = await getUsers();
+  userIndex = startIndex;
+
+  validateUser(users[userIndex]).then();
 }
 
-async function validateUser() {
-  mailConfirmationCode = null;
+function validateUser(user) {
+  return mailjsLogin(user)
+  .then(() => {
+    return webAuthValidate({ value: user?.username }).catch((err) => {
+      if (err?.response?.status === 429) {
+        setTimeout(() => {
+          validateUser(user);
+        }, 40000);
 
-  if (userIndex >= users.length) {
-    userIndex = 0;
-  }
-
-  const user = users[userIndex];
-
-  try {
-    await mailjsLogin(user);
-    await webAuthValidate({ value: user?.username });
-  } catch (error) {
-    console.error({ validateUserError: error });
-  }
+      } else {
+        validateUser(user);
+      }
+    })
+  })
 }
 
-async function activateNextUser() {
-  userIndex++;
-  await validateUser();
-}
-
-try {
-  activateUsers();
-} catch (error) {
-  console.error({ activateUsersError: error });
-}
-
-exports.activateUsers = activateUsers;
+process.on('message', (chunk) => {
+  endIndex = chunk[1];
+  validateUsers(chunk[0]).then();
+});

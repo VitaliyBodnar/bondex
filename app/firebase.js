@@ -9,13 +9,14 @@ function setUser(user) {
       return;
     }
     const jsonData = JSON.parse(data || '{}');
-    jsonData?.users?.push(user);
+  
+    if (!jsonData?.users) { 
+      jsonData.users = [];
+    }
+
+    jsonData.users.push(user);
   
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
-
-    if (!jsonData?.users || !updatedJsonData) {
-      return;
-    }
   
     fs.writeFile(filePath, updatedJsonData, 'utf8', (err) => {
       if (err) {
@@ -30,7 +31,7 @@ async function getUsers() {
   const data = await fs.readFileSync(filePath, 'utf8');
   const jsonData = JSON.parse(data || '{}');
 
-  return [...(jsonData.users || []), ...(jsonData.importedUsers || [])];
+  return jsonData.users;
 }
 
 exports.setUser = setUser;
