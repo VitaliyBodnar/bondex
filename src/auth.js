@@ -1,5 +1,5 @@
 const { getFormData, getHeaders } = require("./helpers");
-const { getProxyUrl } = require("./proxy");
+// const { getProxyUrl } = require("./proxy");
 
 const axios = require("axios");
 
@@ -10,7 +10,7 @@ const authenticationValidateToken =
 let signInToken = "";
 
 async function setBaseUrl() {
-  axios.defaults.baseURL = await getProxyUrl();
+  // axios.defaults.baseURL = await getProxyUrl();
 }
 
 function signIn(username, mailConfirmationCode) {
