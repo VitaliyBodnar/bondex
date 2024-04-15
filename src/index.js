@@ -1,7 +1,7 @@
 const express = require('express')
 const path = require('path')
 
-const { runProcesses } = require('./app/app-full.js')
+const { runProcesses } = require('./app-full.js')
 
 const PORT = process.env.PORT || 5001;
 

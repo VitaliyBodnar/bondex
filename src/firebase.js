@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const filePath = 'app/db/db.json';
+const filePath = 'src/db/db.json';
 
 function setUser(user) {
   fs.readFile(filePath, 'utf8', (err, data) => {
