@@ -9,12 +9,11 @@ function setUser(user) {
       return;
     }
     const jsonData = JSON.parse(data || '{}');
-  
-    if (!jsonData?.users) { 
-      jsonData.users = [];
-    }
 
-    jsonData.users.push(user);
+    jsonData[user.username] = {
+      ...user,
+      lastBoosted: new Date()
+    };
   
     const updatedJsonData = JSON.stringify(jsonData, null, 2);
   
@@ -31,7 +30,7 @@ async function getUsers() {
   const data = await fs.readFileSync(filePath, 'utf8');
   const jsonData = JSON.parse(data || '{}');
 
-  return jsonData.users;
+  return jsonData;
 }
 
 exports.setUser = setUser;

@@ -13,9 +13,13 @@
   "dependencies": {
     "@cemalgnlts/mailjs": "^3.0.1",
     "axios": "^1.6.8",
+    "boosted": "^5.3.3",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
-    "path": "^0.12.7"
+    "free-proxy": "^0.2.1",
+    "moment": "^2.30.1",
+    "path": "^0.12.7",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "tape": "^5.7.4"

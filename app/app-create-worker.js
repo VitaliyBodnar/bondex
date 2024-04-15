@@ -1,6 +1,6 @@
 const { fork } = require('child_process');
 
-const numberOfChunks = 12;
+const numberOfChunks = 6;
 
 const childProcesses = [];
 for (let i = 0; i < numberOfChunks; i++) {

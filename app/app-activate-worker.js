@@ -15,7 +15,7 @@ function chunkArray(array, chunkSize) {
 // Fork child processes
 
 async function createProcess() {
-  const arrayToSplit = await getUsers();
+  const arrayToSplit = Object.keys(await getUsers());
   const numberOfChunks = 4;
 
   const childProcesses = [];
@@ -26,11 +26,7 @@ async function createProcess() {
 
   // Split array into chunks and send chunks to child processes
   let chunkSize = Math.ceil(arrayToSplit.length / numberOfChunks);
-  const chunks = chunkArray(
-    arrayToSplit,
-    Math.ceil(arrayToSplit.length / numberOfChunks)
-  );
-  for (let i = 0; i < chunks.length; i++) {
+  for (let i = 0; i < numberOfChunks; i++) {
     childProcesses[i].send([chunkSize * i, chunkSize * (i + 1)]);
   }
 }
